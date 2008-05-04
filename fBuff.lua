@@ -19,24 +19,18 @@ local Truncate = function(str)
 	return s:sub(1, 4)
 end
 
-local AddText = function(i, debuff)
-	local id
-	if debuff then
-		id = GetPlayerBuff(i, "HARMFUL")
-	else
-		id = i
-	end
+local AddText = function(buttonName, index, filter)
+	local buffIndex = GetPlayerBuff(index, filter)
+	local buffName = buttonName .. index
+	local buff = _G[buffName]
+	local time = _G[buffName .. "Duration"]
+	local count = _G[buffName .. "Count"]
 
-	local buff = debuff and _G["DebuffButton" .. i] or _G["BuffButton" .. i]
-	if not buff then return end
-
-	local name = GetPlayerBuffName(id)
-	if not name then return end
+	local name = Truncate(GetPlayerBuffName(buffIndex))
 
 	if buff.Text then
-		local text = Truncate(name)
-		if text and text ~= buff.Text:GetText() then
-			buff.Text:SetText(text)
+		if name and name ~= buff.Text:GetText() then
+			buff.Text:SetText(name)
 		end
 	else
 		local text = buff:CreateFontString(nil, "OVERLAY")
@@ -44,11 +38,11 @@ local AddText = function(i, debuff)
 		text:SetPoint("TOP", buff, "BOTTOM", 0, -1)
 		text:SetShadowColor(0,0,0,1)
 		text:SetShadowOffset(1, -1)
-		text:SetText(Truncate(name))
+		text:SetText(name)
 		buff.Text = text
 	end
 
-	if debuff then
+	if filter == "HARMFUL" then
 		local col = DebuffTypeColor[GetPlayerBuffDispelType(id)]
 		if col then
 			buff.Text:SetTextColor(col.r, col.g, col.b)
@@ -58,8 +52,6 @@ local AddText = function(i, debuff)
 	else
 		buff.Text:SetTextColor(0, 1, 0)
 	end
-
-	local time = debuff and _G["DebuffButton" .. i .. "Duration"] or _G["BuffButton" .. i .. "Duration"]
 
 	if time then
 		time:ClearAllPoints()
@@ -74,13 +66,12 @@ local AddText = function(i, debuff)
 		time:SetFont(font, 11)
 	end
 
-	local count = GetPlayerBuffApplications(id)
-	if count > 0 then
-		local bc = debuff and _G["DebuffButton" .. i .. "Count"] or _G["BuffButton" .. i .. "Count"]
-		bc:ClearAllPoints()
-		bc:SetPoint("BOTTOMRIGHT", buff, "BOTTOMRIGHT", -2, 2)
-		bc:SetShadowColor(0,0,0,1)
-		bc:SetShadowOffset(1, -1)
+	local num = GetPlayerBuffApplications(id)
+	if count and num > 0 then
+		count:ClearAllPoints()
+		count:SetPoint("BOTTOMRIGHT", buff, "BOTTOMRIGHT", -2, 2)
+		count:SetShadowColor(0,0,0,1)
+		count:SetShadowOffset(1, -1)
 	end
 end
 
@@ -101,14 +92,9 @@ local border = function(index, filter)
 	end
 end
 
-local Skin = function(n, debuff)
-	local buff = _G["BuffButton" .. n]
-	local icon = _G["BuffButton" .. n .. "Icon"]
-
-	if debuff then
-		buff = _G["DebuffButton" .. n]
-		icon = _G["DebuffButton" .. n .. "Icon"]
-	end
+local Skin = function(button, index)
+	local buff = _G[button .. index]
+	local icon = _G[button .. index .. "Icon"]
 
 	icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
 	icon:SetPoint("TOPLEFT", 3, -3)
@@ -143,16 +129,16 @@ local OnEvent = function(self, event, unit)
 		local debuff = _G["DebuffButton" .. i]
 
 		if buff then
-			AddText(i, false)
+			AddText("BuffButton", i, "HELFUL")
 			if not buff.Skinned then
-				Skin(i, false)
+				Skin("BuffButton", i)
 			end
 		end
 
 		if debuff then
-			AddText(i, true)
+			AddText("DebuffButton", i, "HARMFUL")
 			if not debuff.Skinned then
-				Skin(i, true)
+				Skin("DebuffButton", i)
 			end
 			border(i)
 		end
