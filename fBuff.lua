@@ -129,7 +129,7 @@ local OnEvent = function(self, event, unit)
 		local debuff = _G["DebuffButton" .. i]
 
 		if buff then
-			AddText("BuffButton", i, "HELFUL")
+			AddText("BuffButton", i, "HELPFUL")
 			if not buff.Skinned then
 				Skin("BuffButton", i)
 			end
