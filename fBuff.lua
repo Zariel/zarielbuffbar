@@ -25,6 +25,7 @@ local AddText = function(buttonName, index, filter)
 	local buff = _G[buffName]
 	local time = _G[buffName .. "Duration"]
 	local count = _G[buffName .. "Count"]
+	if count then count.show = function() end; count:Hide() end
 
 	local name = Truncate(GetPlayerBuffName(buffIndex))
 
@@ -66,12 +67,28 @@ local AddText = function(buttonName, index, filter)
 		time:SetFont(font, 11)
 	end
 
-	local num = GetPlayerBuffApplications(id)
-	if count and num > 0 then
-		count:ClearAllPoints()
-		count:SetPoint("BOTTOMRIGHT", buff, "BOTTOMRIGHT", -2, 2)
-		count:SetShadowColor(0,0,0,1)
-		count:SetShadowOffset(1, -1)
+	local num = GetPlayerBuffApplications(buffIndex)
+	if num > 0 then
+		if buff.count then
+			if buff.count:GetText() ~= num then
+				buff.count:SetText(num)
+			end
+		else
+			local count = buff:CreateFontString(nil, "OVERLAY")
+			count:SetFont(STANDARD_TEXT_FONT, 16)
+			count:ClearAllPoints()
+			count:SetPoint("CENTER", buff, "CENTER")
+			count:SetTextColor(0.8, 0.8, 0.8, 1)
+			count:SetShadowColor(0, 0, 0, 1)
+			count:SetShadowOffset(1, -1)
+			count:SetText(num)
+			buff.count = count
+		end
+		buff.count:Show()
+	else
+		if buff.count then
+			buff.count:Hide()
+		end
 	end
 end
 
