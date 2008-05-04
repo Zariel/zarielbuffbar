@@ -43,7 +43,7 @@ local AddText = function(buttonName, index, filter)
 	end
 
 	if filter == "HARMFUL" then
-		local col = DebuffTypeColor[GetPlayerBuffDispelType(id)]
+		local col = DebuffTypeColor[GetPlayerBuffDispelType(buffIndex)]
 		if col then
 			buff.Text:SetTextColor(col.r, col.g, col.b)
 		else
