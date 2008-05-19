@@ -1,9 +1,25 @@
+-- CPU usage reduced by ~ 150%
+local _G = getfenv(0)
+
+local GetPlayerBuffName = GetPlayerBuffName
+local GetPlayerBuff = GetPlayerBuff
+local DebuffTypeColor = DebuffTypeColor
+local GetPlayerBuffDispelType = GetPlayerBuffDispelType
+local GetPlayerBuffApplications = GetPlayerBuffApplications
+
+local s_sub = string.sub
+local gmatch = string.gmatch
+local mod = math.fmod
+local floor = math.floor
+local format = string.format
+
+
 BUFF_ROW_SPACING = 25
 
 BuffFrame_OnUpdate = function() end
 
 TemporaryEnchantFrame:ClearAllPoints()
-TemporaryEnchantFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -10, -30)
+TemporaryEnchantFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -5, -30)
 TemporaryEnchantFrame.SetPoint = function() end
 
 QuestWatchFrame:ClearAllPoints()
@@ -12,11 +28,24 @@ QuestWatchFrame:SetPoint("TOPLEFT", MinimapCluster, "TOPRIGHT", 10, -5)
 local print = function(str) return ChatFrame1:AddMessage(tostring(str)) end
 local printf = function(str, ...) return ChatFrame1:AddMessage(tostring(str:format(...))) end
 
+local subs = setmetatable({}, {
+	__mode = "k",
+})
+
 local Truncate = function(str)
+	if subs[str] then
+		return subs[str]
+	end
+
 	if not str then return end
 	local s = ""
-	for w in str:gmatch("%S+") do s = s .. w:sub(1, 1) end
-	return s:sub(1, 4)
+	for w in gmatch(str, "%S+") do s = s .. s_sub(w, 1, 1) end
+
+	s = s_sub(s, 1, 4)
+
+	subs[str] = s
+
+	return s
 end
 
 local AddText = function(buttonName, index, filter)
@@ -138,7 +167,7 @@ end
 local f = CreateFrame("Frame")
 
 local OnEvent = function(self, event, unit)
-	if unit ~= "player" or not unit then return end
+	if event == "UNIT_AURA" and unit ~= "player" then return end
 	BUFF_ROW_SPACING = 25
 
 	for i = 1, 40 do
@@ -168,4 +197,17 @@ f:SetScript("OnEvent", OnEvent)
 f:RegisterEvent("UNIT_AURA")
 f:RegisterEvent("PLAYER_LOGIN")
 
-OnEvent()
+SecondsToTimeAbbrev = function(time)
+	local hr, m, s, text
+	if time <= 0 then text = ""
+	elseif time < 3600 then
+		m = floor(time / 60)
+		s = mod(time, 60)
+		text = (m == 0 and format("%d", s)) or format("%d:%02d", m, s)
+	else
+		hr = floor(time / 3600)
+		m = floor(mod(time, 3600) / 60)
+		text = format("%d.%2d h", hr, m)
+	end
+	return text
+end
