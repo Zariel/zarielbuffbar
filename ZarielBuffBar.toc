@@ -1,4 +1,4 @@
-## Title: Ino
+## Title: ZarielBuffBar
 ## Interface: 20400
 ## Author: Zariel
 
