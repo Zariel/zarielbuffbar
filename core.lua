@@ -6,6 +6,7 @@ local GetPlayerBuff = GetPlayerBuff
 local DebuffTypeColor = DebuffTypeColor
 local GetPlayerBuffDispelType = GetPlayerBuffDispelType
 local GetPlayerBuffApplications = GetPlayerBuffApplications
+local DebuffTypeColor = DebuffTypeColor
 
 local s_sub = string.sub
 local gmatch = string.gmatch
@@ -64,10 +65,10 @@ local AddText = function(buttonName, index, filter)
 		end
 	else
 		local text = buff:CreateFontString(nil, "OVERLAY")
-		text:SetFont(STANDARD_TEXT_FONT, 11)
+		text:SetFont(STANDARD_TEXT_FONT, 11, "OUTLINE")
 		text:SetPoint("TOP", buff, "BOTTOM", 0, -1)
-		text:SetShadowColor(0,0,0,1)
-		text:SetShadowOffset(1, -1)
+		--text:SetShadowColor(0,0,0,1)
+		--text:SetShadowOffset(1, -1)
 		text:SetText(name)
 		buff.Text = text
 	end
@@ -83,17 +84,18 @@ local AddText = function(buttonName, index, filter)
 		buff.Text:SetTextColor(0, 1, 0)
 	end
 
-	if time then
+	if not time.Set then
 		time:ClearAllPoints()
 		time:SetPoint("BOTTOM", buff, "TOP", 0, 1)
 		time.ClearAllPoints = function() end
 		time:SetTextColor(1, 1, 1, 1)
-		time.SetTextColor = function() end
+		time.SetVertexColor = function() end
 
-		time:SetShadowColor(0, 0, 0, 1)
-		time:SetShadowOffset(1, -1)
+		--time:SetShadowColor(0, 0, 0, 1)
+		--time:SetShadowOffset(1, -1)
 		local font = time:GetFont()
-		time:SetFont(font, 11)
+		time:SetFont(font, 11, "OUTLINE")
+		time.Set = true
 	end
 
 	local num = GetPlayerBuffApplications(buffIndex)
@@ -104,10 +106,10 @@ local AddText = function(buttonName, index, filter)
 			end
 		else
 			local count = buff:CreateFontString(nil, "OVERLAY")
-			count:SetFont(STANDARD_TEXT_FONT, 16)
+			count:SetFont(STANDARD_TEXT_FONT, 16, "THICKOUTLINE")
 			count:ClearAllPoints()
 			count:SetPoint("CENTER", buff, "CENTER")
-			count:SetTextColor(0.8, 0.8, 0.8, 1)
+			count:SetTextColor(1, 0, 0, 1)
 			count:SetShadowColor(0, 0, 0, 1)
 			count:SetShadowOffset(1, -1)
 			count:SetText(num)
@@ -167,9 +169,6 @@ end
 local f = CreateFrame("Frame")
 
 local OnEvent = function(self, event, unit)
-	if event == "UNIT_AURA" and unit ~= "player" then return end
-	BUFF_ROW_SPACING = 25
-
 	for i = 1, 40 do
 		local buff = _G["BuffButton"..i]
 		local debuff = _G["DebuffButton" .. i]
@@ -193,9 +192,7 @@ local OnEvent = function(self, event, unit)
 end
 
 f:SetScript("OnEvent", OnEvent)
-
-f:RegisterEvent("UNIT_AURA")
-f:RegisterEvent("PLAYER_LOGIN")
+f:RegisterEvent("PLAYER_AURAS_CHANGED")
 
 SecondsToTimeAbbrev = function(time)
 	local hr, m, s, text
