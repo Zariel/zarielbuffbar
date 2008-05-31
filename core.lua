@@ -69,8 +69,10 @@ local AddText = function(buttonName, index, filter)
 		text:SetFont(snova, 8, "THINOUTLINE")
 		text:SetShadowOffset(1, -1)
 		text:SetShadowColor(0,0,0,1)
+		text:SetPoint("CENTER")
 		text:SetPoint("TOP", buff, "BOTTOM", 0, -2)
 		text:SetText(name)
+		text:SetJustifyH("CENTER")
 		buff.Text = text
 	end
 
@@ -87,15 +89,18 @@ local AddText = function(buttonName, index, filter)
 
 	if not time.Set then
 		time:ClearAllPoints()
-		time:SetPoint("BOTTOM", buff, "TOP", 0, 2)
 		time.ClearAllPoints = function() end
+		time:SetParent(buff)
+		time:SetPoint("CENTER")
+		time:SetPoint("BOTTOM", buff, "TOP", 0, 2)
 		time:SetTextColor(1, 1, 1, 1)
 		time.SetVertexColor = function() end
 
 		time:SetFont(snova, 8, "THINOUTLINE")
 		time:SetShadowOffset(1, -1)
-		time:SetShadowColor(0,0,0,1)
+		time:SetShadowColor(0,0,0,0.8)
 
+		time:SetJustifyH("CENTER")
 		time.Set = true
 	end
 
@@ -146,22 +151,39 @@ local Skin = function(button, index)
 	local icon = _G[button .. index .. "Icon"]
 
 	icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-	icon:SetPoint("TOPLEFT", 4, -4)
-	icon:SetPoint("BOTTOMRIGHT", -4, 4)
+	icon:SetParent(buff)
+	icon:ClearAllPoints()
+	icon:SetPoint("LEFT", 2, 0)
+	icon:SetPoint("RIGHT", -2, 0)
+	icon:SetPoint("TOP", 0, -2)
+	icon:SetPoint("BOTTOM", 0, 2)
 	icon:SetDrawLayer("ARTWORK")
 
 	if not buff.bg then
 		local bg = CreateFrame("Button", nil, buff)
 		bg:SetBackdrop({
-			bgFile = caith, tile = true, tileSize = 16,
+			bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16,
 			insets = {left = 0, right = 0, top = 0, bottom = 0},
 		})
-		bg:SetBackdropColor(1, 1, 1, 1)
+		bg:SetBackdropColor(1, 1, 1, 0)
 		bg:ClearAllPoints()
 		bg:SetAllPoints(buff)
 		bg:SetFrameLevel(1)
 		bg:SetFrameStrata("BACKGROUND")
 		buff.bg = bg
+
+		local skin = buff:CreateTexture(nil, "ARTWORK")
+		skin:SetTexture(caith)
+		skin:SetBlendMode("BLEND")
+		skin:SetPoint("TOP", 0, 2)
+		skin:SetPoint("LEFT", -2, 0)
+		skin:SetPoint("BOTTOM", 0, -2)
+		skin:SetPoint("RIGHT", 2, 0)
+		skin:SetHeight(42)
+		skin:SetWidth(42)
+	--	skin:SetPoint("TOPLEFT", buff, "TOPLEFT", -3, 3)
+	--	skin:SetPoint("BOTTOMRIGHT", buff, "BOTTOMRIGHT", 3, -3)
+		skin:SetVertexColor(0.4, 0.4, 0.4)
 	end
 
 	buff.Skinned = true
@@ -201,7 +223,13 @@ SecondsToTimeAbbrev = function(time)
 	elseif time < 3600 then
 		m = floor(time / 60)
 		s = mod(time, 60)
-		text = (m == 0 and format("%d", s)) or format("%d:%02d", m, s)
+		if m > 9 then
+			text = format("%dm", m)
+		elseif m == 0 then
+			text = format("%ds", s)
+		else
+			text = format("%d:%02d", m, s)
+		end
 	else
 		hr = floor(time / 3600)
 		m = floor(mod(time, 3600) / 60)
