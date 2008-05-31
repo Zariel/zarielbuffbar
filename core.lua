@@ -14,20 +14,21 @@ local mod = math.fmod
 local floor = math.floor
 local format = string.format
 
+local snova = "Interface\\AddOns\\oUF_Kanne2\\nokiafc22.ttf"
+local number = "Fonts\\ARIALN.TTF"
+
+local caith = "Interface\\AddOns\\ZarielBuffBar\\caith\\Normal.tga"
 
 BUFF_ROW_SPACING = 25
 
 BuffFrame_OnUpdate = function() end
 
 TemporaryEnchantFrame:ClearAllPoints()
-TemporaryEnchantFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -5, -30)
+TemporaryEnchantFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -5, -15)
 TemporaryEnchantFrame.SetPoint = function() end
 
 QuestWatchFrame:ClearAllPoints()
 QuestWatchFrame:SetPoint("TOPLEFT", MinimapCluster, "TOPRIGHT", 10, -5)
-
-local print = function(str) return ChatFrame1:AddMessage(tostring(str)) end
-local printf = function(str, ...) return ChatFrame1:AddMessage(tostring(str:format(...))) end
 
 local subs = setmetatable({}, {
 	__mode = "k",
@@ -65,10 +66,10 @@ local AddText = function(buttonName, index, filter)
 		end
 	else
 		local text = buff:CreateFontString(nil, "OVERLAY")
-		text:SetFont(STANDARD_TEXT_FONT, 11, "OUTLINE")
-		text:SetPoint("TOP", buff, "BOTTOM", 0, -1)
-		--text:SetShadowColor(0,0,0,1)
-		--text:SetShadowOffset(1, -1)
+		text:SetFont(snova, 8, "THINOUTLINE")
+		text:SetShadowOffset(1, -1)
+		text:SetShadowColor(0,0,0,1)
+		text:SetPoint("TOP", buff, "BOTTOM", 0, -2)
 		text:SetText(name)
 		buff.Text = text
 	end
@@ -86,15 +87,15 @@ local AddText = function(buttonName, index, filter)
 
 	if not time.Set then
 		time:ClearAllPoints()
-		time:SetPoint("BOTTOM", buff, "TOP", 0, 1)
+		time:SetPoint("BOTTOM", buff, "TOP", 0, 2)
 		time.ClearAllPoints = function() end
 		time:SetTextColor(1, 1, 1, 1)
 		time.SetVertexColor = function() end
 
-		--time:SetShadowColor(0, 0, 0, 1)
-		--time:SetShadowOffset(1, -1)
-		local font = time:GetFont()
-		time:SetFont(font, 11, "OUTLINE")
+		time:SetFont(snova, 8, "THINOUTLINE")
+		time:SetShadowOffset(1, -1)
+		time:SetShadowColor(0,0,0,1)
+
 		time.Set = true
 	end
 
@@ -106,7 +107,7 @@ local AddText = function(buttonName, index, filter)
 			end
 		else
 			local count = buff:CreateFontString(nil, "OVERLAY")
-			count:SetFont(STANDARD_TEXT_FONT, 16, "THICKOUTLINE")
+			count:SetFont("Fonts\\ARIALN.TTF", 16, "THICKOUTLINE")
 			count:ClearAllPoints()
 			count:SetPoint("CENTER", buff, "CENTER")
 			count:SetTextColor(1, 0, 0, 1)
@@ -145,17 +146,17 @@ local Skin = function(button, index)
 	local icon = _G[button .. index .. "Icon"]
 
 	icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-	icon:SetPoint("TOPLEFT", 3, -3)
-	icon:SetPoint("BOTTOMRIGHT", -3, 3)
+	icon:SetPoint("TOPLEFT", 4, -4)
+	icon:SetPoint("BOTTOMRIGHT", -4, 4)
 	icon:SetDrawLayer("ARTWORK")
 
 	if not buff.bg then
 		local bg = CreateFrame("Button", nil, buff)
 		bg:SetBackdrop({
-			bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16,
+			bgFile = caith, tile = true, tileSize = 16,
 			insets = {left = 0, right = 0, top = 0, bottom = 0},
 		})
-		bg:SetBackdropColor(0, 0, 0, 0.6)
+		bg:SetBackdropColor(1, 1, 1, 1)
 		bg:ClearAllPoints()
 		bg:SetAllPoints(buff)
 		bg:SetFrameLevel(1)
