@@ -140,9 +140,9 @@ local border = function(index, filter)
 
 	local col = DebuffTypeColor[GetPlayerBuffDispelType(id)]
 	if col then
-		buff.bg:SetBackdropColor(col.r, col.g, col.b, 0.6)
+		buff.bg:SetBackdropColor(0.45*col.r, 0.45*col.g, 0.45*col.b)
 	else
-		buff.bg:SetBackdropColor(1, 0, 0, 0.6)
+		buff.bg:SetBackdropColor(0.45, 0, 0)
 	end
 end
 
@@ -161,7 +161,7 @@ local Skin = function(button, index)
 
 	if not buff.bg then
 		local bg = CreateFrame("Button", nil, buff)
-		bg:SetBackdrop({
+	--[[	bg:SetBackdrop({
 			bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16,
 			insets = {left = 0, right = 0, top = 0, bottom = 0},
 		})
@@ -170,7 +170,7 @@ local Skin = function(button, index)
 		bg:SetAllPoints(buff)
 		bg:SetFrameLevel(1)
 		bg:SetFrameStrata("BACKGROUND")
-		buff.bg = bg
+		buff.bg = bg]]
 
 		local skin = buff:CreateTexture(nil, "ARTWORK")
 		skin:SetTexture(caith)
@@ -179,11 +179,10 @@ local Skin = function(button, index)
 		skin:SetPoint("LEFT", -2, 0)
 		skin:SetPoint("BOTTOM", 0, -2)
 		skin:SetPoint("RIGHT", 2, 0)
-		skin:SetHeight(42)
-		skin:SetWidth(42)
-	--	skin:SetPoint("TOPLEFT", buff, "TOPLEFT", -3, 3)
-	--	skin:SetPoint("BOTTOMRIGHT", buff, "BOTTOMRIGHT", 3, -3)
-		skin:SetVertexColor(0.4, 0.4, 0.4)
+		skin:SetHeight(32)
+		skin:SetWidth(32)
+		skin:SetVertexColor(0.45, 0.45, 0.45)
+		buff.bg = skin
 	end
 
 	buff.Skinned = true
