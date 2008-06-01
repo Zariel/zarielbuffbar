@@ -39,10 +39,10 @@ local mod = math.fmod
 local floor = math.floor
 local format = string.format
 
-local snova = "Interface\\AddOns\\oUF_Kanne2\\nokiafc22.ttf"
+local snova = "Interface\\AddOns\\ZarielBuffBar\\nokiafc22.ttf"
 local number = "Fonts\\ARIALN.TTF"
 
-local caith = "Interface\\AddOns\\ZarielBuffBar\\caith\\Normal.tga"
+local caith = "Interface\\AddOns\\ZarielBuffBar\\apathy\\Normal.tga"
 
 BUFF_ROW_SPACING = 25
 
