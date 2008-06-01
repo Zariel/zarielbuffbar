@@ -140,9 +140,9 @@ local border = function(index, filter)
 
 	local col = DebuffTypeColor[GetPlayerBuffDispelType(id)]
 	if col then
-		buff.bg:SetBackdropColor(0.45*col.r, 0.45*col.g, 0.45*col.b)
+		buff.bg:SetVertexColor(0.45*col.r, 0.45*col.g, 0.45*col.b)
 	else
-		buff.bg:SetBackdropColor(0.45, 0, 0)
+		buff.bg:SetVertexColor(0.45, 0, 0)
 	end
 end
 
