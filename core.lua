@@ -126,7 +126,7 @@ local AddText = function(buttonName, index, filter)
 	end
 
 	local num = GetPlayerBuffApplications(buffIndex)
-	if num > 0 then
+	if num > 1 then
 		if buff.count then
 			if buff.count:GetText() ~= num then
 				buff.count:SetText(num)
