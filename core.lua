@@ -62,17 +62,17 @@ local subs = setmetatable({}, {
 local Truncate = function(str)
 	if subs[str] then
 		return subs[str]
+	else
+		if not str then return end
+		local s = ""
+		for w in gmatch(str, "%S+") do s = s .. s_sub(w, 1, 1) end
+
+		s = s_sub(s, 1, 4)
+
+		subs[str] = s
+
+		return s
 	end
-
-	if not str then return end
-	local s = ""
-	for w in gmatch(str, "%S+") do s = s .. s_sub(w, 1, 1) end
-
-	s = s_sub(s, 1, 4)
-
-	subs[str] = s
-
-	return s
 end
 
 local AddText = function(buttonName, index, filter)
@@ -101,7 +101,7 @@ local AddText = function(buttonName, index, filter)
 		buff.Text = text
 	end
 
-	if filter == "HARMFUL" then
+	if filter and filter == "HARMFUL" then
 		local col = DebuffTypeColor[select(4, UnitAura("player", buffIndex, filter))]
 		if col then
 			buff.Text:SetTextColor(col.r, col.g, col.b)
@@ -154,18 +154,19 @@ local AddText = function(buttonName, index, filter)
 	end
 end
 
-local border = function(index, filter)
-	local id = index
-	local buff = _G["DebuffButton" .. index]
-	local b = _G["DebuffButton" .. index .. "Border"]
+local border = function(name, index)
+	local buff = _G[name .. index]
+	local b = _G[name .. index .. "Border"]
+
 	if b then
 		b:Hide()
 		b.Show = function() end
 	end
 
-	local col = DebuffTypeColor[select(4, UnitAura("player", buffIndex, filter))]
+	local col = DebuffTypeColor[select(4, UnitAura("player", index, filter))]
+
 	if col then
-		buff.bg:SetVertexColor(0.45*col.r, 0.45*col.g, 0.45*col.b)
+		buff.bg:SetVertexColor(0.45 * col.r, 0.45 * col.g, 0.45 * col.b)
 	else
 		buff.bg:SetVertexColor(0.45, 0, 0)
 	end
@@ -185,18 +186,6 @@ local Skin = function(button, index)
 	icon:SetDrawLayer("ARTWORK")
 
 	if not buff.bg then
-		--local bg = CreateFrame("Button", nil, buff)
-	--[[	bg:SetBackdrop({
-			bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16,
-			insets = {left = 0, right = 0, top = 0, bottom = 0},
-		})
-		bg:SetBackdropColor(1, 1, 1, 0)
-		bg:ClearAllPoints()
-		bg:SetAllPoints(buff)
-		bg:SetFrameLevel(1)
-		bg:SetFrameStrata("BACKGROUND")
-		buff.bg = bg]]
-
 		local skin = buff:CreateTexture(nil, "ARTWORK")
 		skin:SetTexture(caith)
 		--skin:SetBlendMode("BLEND")
@@ -216,8 +205,14 @@ end
 local f = CreateFrame("Frame")
 
 local OnEvent = function(self, event, unit)
+	return self[event](self, unit)
+end
+
+function f:UNIT_AURA(unit)
 	if unit ~= "player" then return end
+
 	BUFF_ROW_SPACING = 30
+
 	for i = 1, 40 do
 		local buff = _G["BuffButton"..i]
 		local debuff = _G["DebuffButton" .. i]
@@ -234,16 +229,34 @@ local OnEvent = function(self, event, unit)
 			if not debuff.Skinned then
 				Skin("DebuffButton", i)
 			end
-			border(i)
+			border("DebuffButton", i)
 		end
+
 		if not buff and not debuff then break end
 	end
 end
 
-OnEvent(nil, nil, "player")
+function f:PLAYER_LOGIN()
+	self:UNIT_AURA("player")
+
+	Skin("TempEnchant", 1)
+	Skin("TempEnchant", 2)
+
+	border("TempEnchant", 1)
+	border("TempEnchant", 2)
+
+	AddText("TempEnchant", 1)
+	AddText("TempEnchant", 2)
+
+	self:UnregisterEvent("PLAYER_LOGIN")
+	self.PLAYER_LOGIN = nil
+end
+
+f:UNIT_AURA("player")
 
 f:SetScript("OnEvent", OnEvent)
 f:RegisterEvent("UNIT_AURA")
+f:RegisterEvent("PLAYER_LOGIN")
 
 SecondsToTimeAbbrev = function(time)
 	local hr, m, s, text
@@ -263,5 +276,6 @@ SecondsToTimeAbbrev = function(time)
 		m = floor(mod(time, 3600) / 60)
 		text = format("%d.%2d h", hr, m)
 	end
+
 	return text
 end
