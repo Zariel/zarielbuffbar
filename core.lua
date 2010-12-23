@@ -87,9 +87,8 @@ local AddText = function(buttonName, index, filter)
 	local buffIndex = index
 	local buffName = buttonName .. index
 	local buff = _G[buffName]
-	local time = _G[buffName .. "Duration"]
-	local count = _G[buffName .. "Count"]
-	if count then count.show = function() end; count:Hide() end
+	local time = buff.time
+	local count = buff.count
 
 	if not time.Set then
 		time:ClearAllPoints()
@@ -142,25 +141,21 @@ local AddText = function(buttonName, index, filter)
 
 	local num = select(4, UnitAura("player", buffIndex, filter)) or 0
 	if num > 1 then
-		if buff.count then
-			if buff.count:GetText() ~= tostring(num) then
-				buff.count:SetText(num)
-			end
-		else
-			local count = buff:CreateFontString(nil, "OVERLAY")
+		if(not buff.count.set) then
+			local count = buff.count
 			count:SetFont("Fonts\\ARIALN.TTF", 18, "OUTLINE")
 			count:ClearAllPoints()
 			count:SetPoint("CENTER", buff, "CENTER")
-			count:SetTextColor(1, 0, 0, 1)
+			count:SetTextColor(1, 0, 0)
 			count:SetShadowColor(0, 0, 0, 1)
 			count:SetShadowOffset(1, -1)
-			count:SetText(num)
-			buff.count = count
+			buff.count.set = true
 		end
 
+		buff.count:SetText(num)
 		buff.count:Show()
 	else
-		if buff.count then
+		if(buff.count) then
 			buff.count:Hide()
 		end
 	end
@@ -237,26 +232,29 @@ function f:UNIT_AURA(unit)
 
 	BUFF_ROW_SPACING = 30
 
+	local buff, debuff
 	for i = 1, 40 do
-		local buff = _G["BuffButton"..i]
-		local debuff = _G["DebuffButton" .. i]
+		buff = _G["BuffButton"..i]
+		debuff = _G["DebuffButton" .. i]
 
-		if buff then
+		if(not (buff or debuff)) then break end
+
+		if(buff) then
 			AddText("BuffButton", i, "HELPFUL")
-			if not buff.Skinned then
+			if(not buff.Skinned) then
 				Skin("BuffButton", i)
 			end
 		end
 
-		if debuff then
+		if(debuff) then
 			AddText("DebuffButton", i, "HARMFUL")
-			if not debuff.Skinned then
+			if(not debuff.Skinned) then
 				Skin("DebuffButton", i)
 			end
+
 			border("DebuffButton", i)
 		end
 
-		if not (buff or debuff) then break end
 	end
 end
 
