@@ -39,21 +39,29 @@ local mod = math.fmod
 local floor = math.floor
 local format = string.format
 
-local snova = "Interface\\AddOns\\ZarielBuffBar\\nokiafc22.ttf"
+local font = "Interface\\AddOns\\ZarielBuffBar\\nokiafc22.ttf"
 local number = "Fonts\\ARIALN.TTF"
 
 local caith = "Interface\\AddOns\\ZarielBuffBar\\apathy\\Normal.tga"
 
 BUFF_ROW_SPACING = 25
+BUFFS_PER_ROW = 14
 
 BuffFrame_OnUpdate = function() end
 
-TemporaryEnchantFrame:ClearAllPoints()
-TemporaryEnchantFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -5, -15)
-TemporaryEnchantFrame.SetPoint = function() end
+local frames = { "BuffFrame", "TemporaryEnchantFrame" }
+for i, d in pairs(frames) do
+	local f = _G[d]
+	f:ClearAllPoints()
+	f:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -5, -15)
+	f.SetPoint = function() end
+	f.ClearAllPoints = function() end
+end
 
-QuestWatchFrame:ClearAllPoints()
-QuestWatchFrame:SetPoint("TOPLEFT", MinimapCluster, "TOPRIGHT", 10, -5)
+_G.TemporaryEnchantFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -5, -40)
+
+--QuestWatchFrame:ClearAllPoints()
+--QuestWatchFrame:SetPoint("TOPLEFT", MinimapCluster, "TOPRIGHT", 10, -5)
 
 local subs = setmetatable({}, {
 	__mode = "k",
@@ -83,35 +91,6 @@ local AddText = function(buttonName, index, filter)
 	local count = _G[buffName .. "Count"]
 	if count then count.show = function() end; count:Hide() end
 
-	local name = Truncate(UnitAura("player", buffIndex, filter))
-
-	if buff.Text then
-		if name and name ~= buff.Text:GetText() then
-			buff.Text:SetText(name)
-		end
-	else
-		local text = buff:CreateFontString(nil, "OVERLAY")
-		text:SetFont(snova, 8, "THINOUTLINE")
-		text:SetShadowOffset(1, -1)
-		text:SetShadowColor(0,0,0,1)
-		text:SetPoint("CENTER")
-		text:SetPoint("TOP", buff, "BOTTOM", 0, -2)
-		text:SetText(name)
-		text:SetJustifyH("CENTER")
-		buff.Text = text
-	end
-
-	if filter and filter == "HARMFUL" then
-		local col = DebuffTypeColor[select(4, UnitAura("player", buffIndex, filter))]
-		if col then
-			buff.Text:SetTextColor(col.r, col.g, col.b)
-		else
-			buff.Text:SetTextColor(1, 0, 0)
-		end
-	else
-		buff.Text:SetTextColor(0, 1, 0)
-	end
-
 	if not time.Set then
 		time:ClearAllPoints()
 		time.ClearAllPoints = function() end
@@ -121,7 +100,7 @@ local AddText = function(buttonName, index, filter)
 		time:SetTextColor(1, 1, 1, 1)
 		time.SetVertexColor = function() end
 
-		time:SetFont(snova, 8, "THINOUTLINE")
+		time:SetFont(font, 8, "THINOUTLINE")
 		time:SetShadowOffset(1, -1)
 		time:SetShadowColor(0,0,0,0.8)
 
@@ -129,10 +108,42 @@ local AddText = function(buttonName, index, filter)
 		time.Set = true
 	end
 
+	if buttonName == "TempEnchant" then return end
+
+	local unit = UnitExists("vehicle") and "vehicle" or "player"
+	local name = Truncate(UnitAura(unit, buffIndex, filter))
+
+	if buff.Text then
+		if name and name ~= buff.Text:GetText() then
+			buff.Text:SetText(name)
+		end
+	else
+		local text = buff:CreateFontString(nil, "OVERLAY")
+		text:SetFont(font, 8, "THINOUTLINE")
+		text:SetShadowOffset(1, -1)
+		text:SetShadowColor(0,0,0,1)
+		text:SetPoint("CENTER")
+		text:SetPoint("TOP", buff, "BOTTOM", 0, -2)
+		text:SetText(name)
+		text:SetJustifyH("CENTER")
+		buff.Text = text
+	end
+
+	if(filter and filter == "HARMFUL") then
+		local col = DebuffTypeColor[select(5, UnitAura("player", buffIndex, filter))]
+		if col then
+			buff.Text:SetTextColor(col.r, col.g, col.b)
+		else
+			buff.Text:SetTextColor(1, 0, 0)
+		end
+	else
+		buff.Text:SetTextColor(0, 1, 0)
+	end
+
 	local num = select(4, UnitAura("player", buffIndex, filter)) or 0
 	if num > 1 then
 		if buff.count then
-			if buff.count:GetText() ~= num then
+			if buff.count:GetText() ~= tostring(num) then
 				buff.count:SetText(num)
 			end
 		else
@@ -146,6 +157,7 @@ local AddText = function(buttonName, index, filter)
 			count:SetText(num)
 			buff.count = count
 		end
+
 		buff.count:Show()
 	else
 		if buff.count then
@@ -163,12 +175,13 @@ local border = function(name, index)
 		b.Show = function() end
 	end
 
-	local col = DebuffTypeColor[select(4, UnitAura("player", index, filter))]
-
-	if col then
-		buff.bg:SetVertexColor(0.45 * col.r, 0.45 * col.g, 0.45 * col.b)
-	else
-		buff.bg:SetVertexColor(0.45, 0, 0)
+	if name == "DebuffButton" then
+		local col = DebuffTypeColor[select(5, UnitAura("player", index, "HARMFUL"))]
+		if col then
+			buff.bg:SetVertexColor(0.45 * col.r, 0.45 * col.g, 0.45 * col.b)
+		else
+			buff.bg:SetVertexColor(0.45, 0, 0)
+		end
 	end
 end
 
@@ -178,23 +191,34 @@ local Skin = function(button, index)
 
 	icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
 	icon:SetParent(buff)
+	--[[
 	icon:ClearAllPoints()
 	icon:SetPoint("LEFT", 2, 0)
 	icon:SetPoint("RIGHT", -2, 0)
 	icon:SetPoint("TOP", 0, -2)
 	icon:SetPoint("BOTTOM", 0, 2)
+	]]
+
 	icon:SetDrawLayer("ARTWORK")
+	icon:ClearAllPoints()
+	icon:SetPoint("CENTER", buff)
+	icon:SetHeight(24)
+	icon:SetWidth(24)
 
 	if not buff.bg then
 		local skin = buff:CreateTexture(nil, "ARTWORK")
 		skin:SetTexture(caith)
-		--skin:SetBlendMode("BLEND")
+		--skin:SetBlendMode("ADD")
+		--[[
 		skin:SetPoint("TOP", 0, 2)
 		skin:SetPoint("LEFT", -2, 0)
 		skin:SetPoint("BOTTOM", 0, -2)
 		skin:SetPoint("RIGHT", 2, 0)
-		skin:SetHeight(33)
-		skin:SetWidth(33)
+		]]
+		--skin:SetAllPoints(buff)
+		skin:SetPoint("CENTER", icon, "CENTER")
+		skin:SetHeight(32)
+		skin:SetWidth(32)
 		skin:SetVertexColor(0.45, 0.45, 0.45)
 		buff.bg = skin
 	end
@@ -209,7 +233,7 @@ local OnEvent = function(self, event, unit)
 end
 
 function f:UNIT_AURA(unit)
-	if unit ~= "player" then return end
+	if unit ~= "player" and unit ~= "vehicle" then return end
 
 	BUFF_ROW_SPACING = 30
 
@@ -232,31 +256,35 @@ function f:UNIT_AURA(unit)
 			border("DebuffButton", i)
 		end
 
-		if not buff and not debuff then break end
+		if not (buff or debuff) then break end
 	end
 end
 
-function f:PLAYER_LOGIN()
+function f:PLAYER_ENTERING_WORLD()
 	self:UNIT_AURA("player")
+	if UnitExists("vehicle") then
+		self:UNIT_AURA("vehicle")
+	end
 
-	Skin("TempEnchant", 1)
-	Skin("TempEnchant", 2)
+	for i = 1, 2 do
+		Skin("TempEnchant", i)
 
-	border("TempEnchant", 1)
-	border("TempEnchant", 2)
+		border("TempEnchant", i)
 
-	AddText("TempEnchant", 1)
-	AddText("TempEnchant", 2)
+		local r, g, b = 136/255, 57/255, 184/255
+		_G["TempEnchant" .. i].bg:SetVertexColor(r, g, b)
 
-	self:UnregisterEvent("PLAYER_LOGIN")
-	self.PLAYER_LOGIN = nil
+		AddText("TempEnchant", i)
+	end
+
+	self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+	self.PLAYER_ENTERING_WORLD = nil
 end
-
-f:UNIT_AURA("player")
 
 f:SetScript("OnEvent", OnEvent)
 f:RegisterEvent("UNIT_AURA")
-f:RegisterEvent("PLAYER_LOGIN")
+
+f:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 SecondsToTimeAbbrev = function(time)
 	local hr, m, s, text
@@ -277,5 +305,5 @@ SecondsToTimeAbbrev = function(time)
 		text = format("%d.%2d h", hr, m)
 	end
 
-	return text
+	return tostring(text)
 end

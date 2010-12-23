@@ -1,5 +1,5 @@
 ## Title: ZarielBuffBar
-## Interface: 30000
+## Interface: 30100
 ## Author: Zariel
 
 core.lua
