@@ -44,10 +44,17 @@ local number = "Fonts\\ARIALN.TTF"
 
 local caith = "Interface\\AddOns\\ZarielBuffBar\\apathy\\Normal.tga"
 
-BUFF_ROW_SPACING = 25
-BUFFS_PER_ROW = 14
+hooksecurefunc("BuffFrame_UpdatePositions", function()
+	BUFF_ROW_SPACING = 25
+	BUFFS_PER_ROW = 14
+end)
 
-BuffFrame_OnUpdate = function() end
+hooksecurefunc("BuffFrame_UpdateAllBuffAnchors", function()
+	BUFF_ROW_SPACING = 25
+	BUFFS_PER_ROW = 14
+end)
+
+--BuffFrame_OnUpdate = function() end
 
 local frames = { "BuffFrame", "TemporaryEnchantFrame" }
 for i, d in pairs(frames) do
@@ -87,10 +94,10 @@ local AddText = function(buttonName, index, filter)
 	local buffIndex = index
 	local buffName = buttonName .. index
 	local buff = _G[buffName]
-	local time = buff.time
+	local time = buff.duration
 	local count = buff.count
 
-	if not time.Set then
+	if(not time.Set) then
 		time:ClearAllPoints()
 		time.ClearAllPoints = function() end
 		time:SetParent(buff)
@@ -101,7 +108,7 @@ local AddText = function(buttonName, index, filter)
 
 		time:SetFont(font, 8, "THINOUTLINE")
 		time:SetShadowOffset(1, -1)
-		time:SetShadowColor(0,0,0,0.8)
+		time:SetShadowColor(0, 0, 0, 0.8)
 
 		time:SetJustifyH("CENTER")
 		time.Set = true
@@ -146,10 +153,16 @@ local AddText = function(buttonName, index, filter)
 			count:SetFont("Fonts\\ARIALN.TTF", 18, "OUTLINE")
 			count:ClearAllPoints()
 			count:SetPoint("CENTER", buff, "CENTER")
-			count:SetTextColor(1, 0, 0)
+
+			if(filter == "HELPFUL") then
+				count:SetTextColor(0, 1, 0)
+			elseif(filter == "HARMFUL") then
+				count:SetTextColor(1, 0, 0)
+			end
+
 			count:SetShadowColor(0, 0, 0, 1)
 			count:SetShadowOffset(1, -1)
-			buff.count.set = true
+			count:SetDrawLayer("OVERLAY")
 		end
 
 		buff.count:SetText(num)
@@ -170,7 +183,7 @@ local border = function(name, index)
 		b.Show = function() end
 	end
 
-	if name == "DebuffButton" then
+	if(name == "DebuffButton") then
 		local col = DebuffTypeColor[select(5, UnitAura("player", index, "HARMFUL"))]
 		if col then
 			buff.bg:SetVertexColor(0.45 * col.r, 0.45 * col.g, 0.45 * col.b)
@@ -186,13 +199,6 @@ local Skin = function(button, index)
 
 	icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
 	icon:SetParent(buff)
-	--[[
-	icon:ClearAllPoints()
-	icon:SetPoint("LEFT", 2, 0)
-	icon:SetPoint("RIGHT", -2, 0)
-	icon:SetPoint("TOP", 0, -2)
-	icon:SetPoint("BOTTOM", 0, 2)
-	]]
 
 	icon:SetDrawLayer("ARTWORK")
 	icon:ClearAllPoints()
@@ -200,17 +206,9 @@ local Skin = function(button, index)
 	icon:SetHeight(24)
 	icon:SetWidth(24)
 
-	if not buff.bg then
+	if(not buff.bg) then
 		local skin = buff:CreateTexture(nil, "ARTWORK")
 		skin:SetTexture(caith)
-		--skin:SetBlendMode("ADD")
-		--[[
-		skin:SetPoint("TOP", 0, 2)
-		skin:SetPoint("LEFT", -2, 0)
-		skin:SetPoint("BOTTOM", 0, -2)
-		skin:SetPoint("RIGHT", 2, 0)
-		]]
-		--skin:SetAllPoints(buff)
 		skin:SetPoint("CENTER", icon, "CENTER")
 		skin:SetHeight(32)
 		skin:SetWidth(32)
@@ -284,7 +282,7 @@ f:RegisterEvent("UNIT_AURA")
 
 f:RegisterEvent("PLAYER_ENTERING_WORLD")
 
-SecondsToTimeAbbrev = function(time)
+hooksecurefunc("SecondsToTimeAbbrev", function(time)
 	local hr, m, s, text
 	if time <= 0 then text = ""
 	elseif time < 3600 then
@@ -304,4 +302,4 @@ SecondsToTimeAbbrev = function(time)
 	end
 
 	return tostring(text)
-end
+end)
