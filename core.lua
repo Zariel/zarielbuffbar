@@ -39,10 +39,10 @@ local mod = math.fmod
 local floor = math.floor
 local format = string.format
 
-local font = "Interface\\AddOns\\ZarielBuffBar\\nokiafc22.ttf"
+local font = "Interface\\AddOns\\ZarielBuffBar\\media\\nokiafc22.ttf"
 local number = "Fonts\\ARIALN.TTF"
 
-local caith = "Interface\\AddOns\\ZarielBuffBar\\apathy\\Normal.tga"
+local caith = "Interface\\AddOns\\ZarielBuffBar\\media\\apathy.tga"
 
 hooksecurefunc("BuffFrame_UpdatePositions", function()
 	BUFF_ROW_SPACING = 25
@@ -56,11 +56,10 @@ end)
 
 --BuffFrame_OnUpdate = function() end
 
-local frames = { "BuffFrame", "TemporaryEnchantFrame" }
-for i, d in pairs(frames) do
+for i, d in pairs({ "BuffFrame", "TemporaryEnchantFrame" }) do
 	local f = _G[d]
 	f:ClearAllPoints()
-	f:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -5, -15)
+	f:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", - 15, - 15)
 	f.SetPoint = function() end
 	f.ClearAllPoints = function() end
 end
@@ -72,25 +71,19 @@ _G.TemporaryEnchantFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -5, -40)
 
 local subs = setmetatable({}, {
 	__mode = "k",
-})
-
-local Truncate = function(str)
-	if subs[str] then
-		return subs[str]
-	else
-		if not str then return end
+	__index = function(self, k)
+		if(not k) then return end
 		local s = ""
-		for w in gmatch(str, "%S+") do s = s .. s_sub(w, 1, 1) end
+		for w in gmatch(k, "%S+") do s = s .. s_sub(w, 1, 1) end
 
 		s = s_sub(s, 1, 4)
-
-		subs[str] = s
+		rawset(self, k, s)
 
 		return s
 	end
-end
+})
 
-local AddText = function(buttonName, index, filter)
+local addText = function(buttonName, index, filter)
 	local buffIndex = index
 	local buffName = buttonName .. index
 	local buff = _G[buffName]
@@ -117,10 +110,10 @@ local AddText = function(buttonName, index, filter)
 	if buttonName == "TempEnchant" then return end
 
 	local unit = UnitExists("vehicle") and "vehicle" or "player"
-	local name = Truncate(UnitAura(unit, buffIndex, filter))
+	local name = subs[UnitAura(unit, buffIndex, filter)]
 
-	if buff.Text then
-		if name and name ~= buff.Text:GetText() then
+	if(buff.Text) then
+		if(name and name ~= buff.Text:GetText()) then
 			buff.Text:SetText(name)
 		end
 	else
@@ -147,7 +140,7 @@ local AddText = function(buttonName, index, filter)
 	end
 
 	local num = select(4, UnitAura("player", buffIndex, filter)) or 0
-	if num > 1 then
+	if(num > 1) then
 		if(not buff.count.set) then
 			local count = buff.count
 			count:SetFont("Fonts\\ARIALN.TTF", 18, "OUTLINE")
@@ -193,7 +186,7 @@ local border = function(name, index)
 	end
 end
 
-local Skin = function(button, index)
+local skin = function(button, index)
 	local buff = _G[button .. index]
 	local icon = _G[button .. index .. "Icon"]
 
@@ -216,7 +209,7 @@ local Skin = function(button, index)
 		buff.bg = skin
 	end
 
-	buff.Skinned = true
+	buff.skinned = true
 end
 
 local f = CreateFrame("Frame")
@@ -228,7 +221,7 @@ end
 function f:UNIT_AURA(unit)
 	if unit ~= "player" and unit ~= "vehicle" then return end
 
-	BUFF_ROW_SPACING = 30
+	--BUFF_ROW_SPACING = 30
 
 	local buff, debuff
 	for i = 1, 40 do
@@ -238,21 +231,19 @@ function f:UNIT_AURA(unit)
 		if(not (buff or debuff)) then break end
 
 		if(buff) then
-			AddText("BuffButton", i, "HELPFUL")
-			if(not buff.Skinned) then
-				Skin("BuffButton", i)
+			if(not buff.skinned) then
+				skin("BuffButton", i)
 			end
+			addText("BuffButton", i, "HELPFUL")
 		end
 
 		if(debuff) then
-			AddText("DebuffButton", i, "HARMFUL")
-			if(not debuff.Skinned) then
-				Skin("DebuffButton", i)
+			if(not debuff.skinned) then
+				skin("DebuffButton", i)
+				border("DebuffButton", i)
 			end
-
-			border("DebuffButton", i)
+			addText("DebuffButton", i, "HARMFUL")
 		end
-
 	end
 end
 
@@ -263,14 +254,14 @@ function f:PLAYER_ENTERING_WORLD()
 	end
 
 	for i = 1, 2 do
-		Skin("TempEnchant", i)
+		skin("TempEnchant", i)
 
 		border("TempEnchant", i)
 
-		local r, g, b = 136/255, 57/255, 184/255
+		local r, g, b = 136 / 255, 57 / 255, 184 / 255
 		_G["TempEnchant" .. i].bg:SetVertexColor(r, g, b)
 
-		AddText("TempEnchant", i)
+		addText("TempEnchant", i)
 	end
 
 	self:UnregisterEvent("PLAYER_ENTERING_WORLD")
@@ -282,7 +273,7 @@ f:RegisterEvent("UNIT_AURA")
 
 f:RegisterEvent("PLAYER_ENTERING_WORLD")
 
-hooksecurefunc("SecondsToTimeAbbrev", function(time)
+SecondsToTimeAbbrev = function(time)
 	local hr, m, s, text
 	if time <= 0 then text = ""
 	elseif time < 3600 then
@@ -302,4 +293,4 @@ hooksecurefunc("SecondsToTimeAbbrev", function(time)
 	end
 
 	return tostring(text)
-end)
+end
